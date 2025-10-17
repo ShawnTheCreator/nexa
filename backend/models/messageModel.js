@@ -1,5 +1,4 @@
-const sql = require('mssql');
-const { getPool } = require('../database/connection');
+import { getPool, sql } from '../database/connectAzureSQL.js';
 
 class Message {
   constructor({ id, senderId, receiverId, content, createdAt, readAt = null }) {
@@ -86,5 +85,4 @@ class Message {
     });
   }
 }
-
-module.exports = { Message };
+export { Message };

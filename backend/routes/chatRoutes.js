@@ -1,12 +1,12 @@
-const express = require('express');
-const { protectRoute } = require('../middleware/authMiddleware');
-const messageControllers = require('../controllers/messageControllers');
+import express from 'express';
+import { protectRoute } from '../middleware/authMiddleware.js';
+import { listConversations, getConversation, sendMessage, markConversationRead } from '../controllers/messageControllers.js';
 
 const router = express.Router();
 
-router.get('/conversations', protectRoute, messageControllers.listConversations);
-router.get('/conversations/:partnerId', protectRoute, messageControllers.getConversation);
-router.post('/messages', protectRoute, messageControllers.sendMessage);
-router.post('/conversations/:partnerId/read', protectRoute, messageControllers.markConversationRead);
+router.get('/conversations', protectRoute, listConversations);
+router.get('/conversations/:partnerId', protectRoute, getConversation);
+router.post('/messages', protectRoute, sendMessage);
+router.post('/conversations/:partnerId/read', protectRoute, markConversationRead);
 
-module.exports = router;
+export default router;

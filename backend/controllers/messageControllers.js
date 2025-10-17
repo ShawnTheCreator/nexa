@@ -1,6 +1,6 @@
-const { Message } = require('../models/messageModel');
+import { Message } from '../models/messageModel.js';
 
-async function sendMessage(req, res) {
+export async function sendMessage(req, res) {
   try {
     const senderId = req.user?.id;
     const { receiverId, content } = req.body;
@@ -15,7 +15,7 @@ async function sendMessage(req, res) {
   }
 }
 
-async function getConversation(req, res) {
+export async function getConversation(req, res) {
   try {
     const userId = req.user?.id;
     const { partnerId } = req.params;
@@ -29,7 +29,7 @@ async function getConversation(req, res) {
   }
 }
 
-async function listConversations(req, res) {
+export async function listConversations(req, res) {
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -41,7 +41,7 @@ async function listConversations(req, res) {
   }
 }
 
-async function markConversationRead(req, res) {
+export async function markConversationRead(req, res) {
   try {
     const userId = req.user?.id;
     const { partnerId } = req.params;
@@ -53,10 +53,3 @@ async function markConversationRead(req, res) {
     res.status(500).json({ success: false, message: 'Failed to mark as read' });
   }
 }
-
-module.exports = {
-  sendMessage,
-  getConversation,
-  listConversations,
-  markConversationRead,
-};
