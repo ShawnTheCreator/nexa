@@ -1,5 +1,9 @@
--- Create Users table
-CREATE TABLE Users (
+-- Create Users table (dbo) if it does not exist
+IF NOT EXISTS (
+    SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Users]') AND type = N'U'
+)
+BEGIN
+CREATE TABLE dbo.Users (
     Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     Email NVARCHAR(255) NOT NULL UNIQUE,
     Password NVARCHAR(255) NOT NULL,
@@ -30,18 +34,27 @@ CREATE TABLE Users (
     CreatedAt DATETIME2 DEFAULT GETUTCDATE(),
     UpdatedAt DATETIME2 DEFAULT GETUTCDATE()
 );
-
--- Create indexes for performance
-CREATE INDEX IX_Users_Email ON Users(Email);
-CREATE INDEX IX_Users_StudentNumber ON Users(StudentNumber) WHERE StudentNumber IS NOT NULL;
-CREATE INDEX IX_Users_IsVerified ON Users(IsVerified);
-CREATE INDEX IX_Users_CreatedAt ON Users(CreatedAt);
+END
 
 GO
 
--- Create trigger to update UpdatedAt timestamp
+-- Create indexes for performance (idempotent, only if table exists)
+IF OBJECT_ID('dbo.Users', 'U') IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Users_Email' AND object_id = OBJECT_ID('dbo.Users'))
+        CREATE INDEX IX_Users_Email ON dbo.Users(Email);
+    IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Users_StudentNumber' AND object_id = OBJECT_ID('dbo.Users'))
+        CREATE INDEX IX_Users_StudentNumber ON dbo.Users(StudentNumber) WHERE StudentNumber IS NOT NULL;
+    IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Users_IsVerified' AND object_id = OBJECT_ID('dbo.Users'))
+        CREATE INDEX IX_Users_IsVerified ON dbo.Users(IsVerified);
+    IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Users_CreatedAt' AND object_id = OBJECT_ID('dbo.Users'))
+        CREATE INDEX IX_Users_CreatedAt ON dbo.Users(CreatedAt);
+END
+
+GO
+
 CREATE TRIGGER TR_Users_UpdatedAt
-ON Users
+ON dbo.Users
 AFTER UPDATE
 AS
 BEGIN
