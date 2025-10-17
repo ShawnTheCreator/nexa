@@ -31,6 +31,9 @@ END CATCH
 GO
 
 -- Trigger to auto-update UpdatedAt on update
+IF OBJECT_ID(N'dbo.tr_Ideas_UpdateTimestamp', 'TR') IS NOT NULL
+    DROP TRIGGER dbo.tr_Ideas_UpdateTimestamp;
+GO
 BEGIN TRY
     IF OBJECT_ID('dbo.tr_Ideas_UpdateTimestamp', 'TR') IS NULL
     BEGIN
