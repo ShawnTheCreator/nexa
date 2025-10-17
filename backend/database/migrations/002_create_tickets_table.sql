@@ -97,22 +97,24 @@ END CATCH
 GO
 
 -- Create trigger to update UpdatedAt timestamp
+IF OBJECT_ID(N'dbo.TR_Tickets_UpdatedAt', 'TR') IS NOT NULL
+    DROP TRIGGER dbo.TR_Tickets_UpdatedAt;
+GO
 CREATE TRIGGER TR_Tickets_UpdatedAt
 ON dbo.Tickets
 AFTER UPDATE
 AS
 BEGIN
     SET NOCOUNT ON;
-    UPDATE Tickets 
+    UPDATE t
     SET UpdatedAt = GETUTCDATE(),
         ResolvedAt = CASE 
             WHEN i.Status IN ('resolved', 'closed') AND o.Status NOT IN ('resolved', 'closed') 
-            THEN GETUTCDATE() 
-            ELSE ResolvedAt 
+            THEN GETUTCDATE()
+            ELSE t.ResolvedAt 
         END
-    FROM Tickets t
+    FROM dbo.Tickets t
     INNER JOIN inserted i ON t.Id = i.Id
     INNER JOIN deleted o ON t.Id = o.Id;
 END;
-
 GO
