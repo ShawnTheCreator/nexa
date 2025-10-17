@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { JSX, SVGProps, useState } from 'react';
 import {
   Divider,
   Select,
@@ -7,8 +7,9 @@ import {
   TextInput,
 } from '@tremor/react';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/api';
 
-const Logo = (props) => (
+const Logo = (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
   <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
     <path d="M9 2L10.5 7L15 8.5L10.5 10L9 15L7.5 10L3 8.5L7.5 7L9 2Z" />
     <path d="M15 11L16 14L19 15L16 16L15 19L14 16L11 15L14 14L15 11Z" />
@@ -21,6 +22,9 @@ export default function Example() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [serverSuccess, setServerSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -86,30 +90,78 @@ export default function Example() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setServerError(null);
+    setServerSuccess(null);
+    setLoading(true);
+
     const formData = new FormData(e.target as HTMLFormElement);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirm-password') as string;
+    const firstName = formData.get('first-name') as string;
+    const lastName = formData.get('last-name') as string;
+    const studentNumber = formData.get('student-number') as string;
+    const campus = formData.get('campus') as string;
+    const faculty = formData.get('faculty') as string;
+    const yearOfStudy = formData.get('year-of-study') as string;
     
     if (!validateEmail(email)) {
       setEmailError(getEmailErrorMessage(email) || 'Please enter a valid email address');
+      setLoading(false);
       return;
     }
 
     const passwordValidation = validatePassword(password);
     if (passwordValidation) {
       setPasswordError(passwordValidation);
+      setLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
       setConfirmPasswordError('Passwords do not match');
+      setLoading(false);
       return;
     }
     
-    console.log('Registration form submitted');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          firstName,
+          lastName,
+          studentNumber,
+          campus,
+          faculty,
+          yearOfStudy
+        })
+      });
+
+      const contentType = res.headers.get('content-type') || '';
+      let data: any = null;
+      if (contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        data = { message: text };
+      }
+
+      if (!res.ok || (data && data.success === false)) {
+        setServerError(data?.message || 'Signup failed');
+      } else {
+        setServerSuccess(data?.message || 'Account created successfully');
+      }
+    } catch (err: any) {
+      setServerError(err?.message || 'Network error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -128,6 +180,17 @@ export default function Example() {
               Innovation Management Platform
             </p>
           </div>
+
+          {serverError && (
+            <div role="alert" className="mb-4 rounded-tremor-default border border-red-300 bg-red-50 px-3 py-2 text-red-700 dark:border-red-700 dark:bg-red-900/30 dark:text-red-200">
+              {serverError}
+            </div>
+          )}
+          {serverSuccess && (
+            <div role="status" className="mb-4 rounded-tremor-default border border-green-300 bg-green-50 px-3 py-2 text-green-700 dark:border-green-700 dark:bg-green-900/30 dark:text-green-200">
+              {serverSuccess}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="bg-tremor-background dark:bg-dark-tremor-background p-8 rounded-tremor-default shadow-tremor-card dark:shadow-dark-tremor-card">
             {/* Personal Information Section */}
@@ -393,9 +456,10 @@ export default function Example() {
                 </Link>
                 <button
                   type="submit"
-                  className="whitespace-nowrap rounded-tremor-default bg-tremor-brand px-4 py-2.5 text-tremor-default font-medium text-tremor-brand-inverted shadow-tremor-input hover:bg-tremor-brand-emphasis dark:bg-dark-tremor-brand dark:text-dark-tremor-brand-inverted dark:shadow-dark-tremor-input dark:hover:bg-dark-tremor-brand-emphasis"
+                  disabled={loading}
+                  className="whitespace-nowrap rounded-tremor-default bg-tremor-brand px-4 py-2.5 text-tremor-default font-medium text-tremor-brand-inverted shadow-tremor-input hover:bg-tremor-brand-emphasis disabled:opacity-60 disabled:cursor-not-allowed dark:bg-dark-tremor-brand dark:text-dark-tremor-brand-inverted dark:shadow-dark-tremor-input dark:hover:bg-dark-tremor-brand-emphasis"
                 >
-                  Create Account
+                  {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
               </div>
             </div>

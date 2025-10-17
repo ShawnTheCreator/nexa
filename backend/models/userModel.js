@@ -29,7 +29,7 @@ class User {
       const pool = await getPool();
       const request = pool.request();
 
-      const result = await request
+      await request
         .input('Email', sql.NVarChar(255), userData.email)
         .input('Password', sql.NVarChar(255), userData.password)
         .input('FirstName', sql.NVarChar(100), userData.firstName)
@@ -41,12 +41,16 @@ class User {
         .input('VerificationToken', sql.NVarChar(255), userData.verificationToken || null)
         .input('VerificationTokenExpiresAt', sql.DateTime2, userData.verificationTokenExpiresAt || null)
         .query(`
-          INSERT INTO Users (Email, Password, FirstName, LastName, StudentNumber, Campus, Faculty, YearOfStudy, VerificationToken, VerificationTokenExpiresAt)
-          OUTPUT INSERTED.*
+          INSERT INTO dbo.Users (Email, Password, FirstName, LastName, StudentNumber, Campus, Faculty, YearOfStudy, VerificationToken, VerificationTokenExpiresAt)
           VALUES (@Email, @Password, @FirstName, @LastName, @StudentNumber, @Campus, @Faculty, @YearOfStudy, @VerificationToken, @VerificationTokenExpiresAt)
         `);
 
-      return new User(result.recordset[0]);
+      const fetchRequest = (await getPool()).request();
+      const fetchResult = await fetchRequest
+        .input('Email', sql.NVarChar(255), userData.email)
+        .query('SELECT * FROM dbo.Users WHERE Email = @Email');
+
+      return new User(fetchResult.recordset[0]);
     } catch (error) {
       throw new Error(`Error creating user: ${error.message}`);
     }
@@ -158,17 +162,23 @@ class User {
         return this;
       }
 
-      const result = await request
+      // Perform update WITHOUT OUTPUT (triggers present forbid OUTPUT without INTO)
+      await request
         .input('Id', sql.UniqueIdentifier, this.id)
         .query(`
           UPDATE Users 
           SET ${setClause.join(', ')}
-          OUTPUT INSERTED.*
           WHERE Id = @Id
         `);
 
-      if (result.recordset.length > 0) {
-        Object.assign(this, new User(result.recordset[0]));
+      // Fetch updated row to sync instance state
+      const fetchRequest = (await getPool()).request();
+      const fetchResult = await fetchRequest
+        .input('Id', sql.UniqueIdentifier, this.id)
+        .query('SELECT * FROM Users WHERE Id = @Id');
+
+      if (fetchResult.recordset.length > 0) {
+        Object.assign(this, new User(fetchResult.recordset[0]));
       }
 
       return this;
