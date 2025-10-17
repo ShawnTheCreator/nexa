@@ -36,10 +36,28 @@ CREATE TABLE dbo.Tickets (
     
     -- Foreign key constraints
     CONSTRAINT FK_Tickets_Users FOREIGN KEY (UserId) REFERENCES dbo.Users(Id) ON DELETE CASCADE,
-    CONSTRAINT FK_Tickets_AssignedTo FOREIGN KEY (AssignedTo) REFERENCES dbo.Users(Id) ON DELETE SET NULL
+    -- Avoid SQL Server multiple cascade paths: use NO ACTION here and handle via trigger
+    CONSTRAINT FK_Tickets_AssignedTo FOREIGN KEY (AssignedTo) REFERENCES dbo.Users(Id) ON DELETE NO ACTION
 );
 END
 
+GO
+
+-- Handle assigned user deletions by nulling Tickets.AssignedTo via trigger (not FK cascade)
+IF OBJECT_ID(N'dbo.TR_Users_AssignedTo_SetNull', 'TR') IS NOT NULL
+    DROP TRIGGER dbo.TR_Users_AssignedTo_SetNull;
+GO
+CREATE TRIGGER TR_Users_AssignedTo_SetNull
+ON dbo.Users
+AFTER DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE t
+    SET AssignedTo = NULL
+    FROM dbo.Tickets t
+    INNER JOIN deleted d ON t.AssignedTo = d.Id;
+END;
 GO
 
 BEGIN TRY
