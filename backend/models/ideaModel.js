@@ -1,5 +1,4 @@
-const sql = require('mssql');
-const { getPool } = require('../database/connection');
+import { getPool, sql } from '../database/connectAzureSQL.js';
 
 class Idea {
   constructor({ id, userId, title, description, videoUrl = null, attachmentUrls = null, status = 'submitted', createdAt = null, updatedAt = null }) {
@@ -125,4 +124,4 @@ class Idea {
   }
 }
 
-module.exports = { Idea };
+export { Idea };

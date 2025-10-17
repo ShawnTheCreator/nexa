@@ -1,7 +1,7 @@
-const express = require('express');
-const multer = require('multer');
-const { protectRoute, requireAdmin } = require('../middleware/authMiddleware');
-const {
+import express from 'express';
+import multer from 'multer';
+import { protectRoute, requireAdmin } from '../middleware/authMiddleware.js';
+import {
   createIdea,
   uploadIdeaAttachments,
   uploadIdeaVideo,
@@ -9,7 +9,7 @@ const {
   getIdeaById,
   updateIdea,
   deleteIdea,
-} = require('../controllers/ideaControllers');
+} from '../controllers/ideaControllers.js';
 
 const router = express.Router();
 
@@ -29,4 +29,4 @@ router.post('/:id/video', protectRoute, upload.single('video'), uploadIdeaVideo)
 router.patch('/:id', protectRoute, requireAdmin, updateIdea);
 router.delete('/:id', protectRoute, requireAdmin, deleteIdea);
 
-module.exports = router;
+export default router;

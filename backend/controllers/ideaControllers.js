@@ -1,8 +1,8 @@
-const { Idea } = require('../models/ideaModel');
-const { azureBlobService } = require('../services/azureBlobService');
+import { Idea } from '../models/ideaModel.js';
+import { azureBlobService } from '../services/azureBlobService.js';
 
 // Create an idea (without media)
-async function createIdea(req, res) {
+export async function createIdea(req, res) {
   try {
     const userId = req.user?.id;
     const { title, description } = req.body;
@@ -18,7 +18,7 @@ async function createIdea(req, res) {
 }
 
 // Upload attachments for an idea
-async function uploadIdeaAttachments(req, res) {
+export async function uploadIdeaAttachments(req, res) {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
@@ -49,7 +49,7 @@ async function uploadIdeaAttachments(req, res) {
 }
 
 // Upload a video for an idea
-async function uploadIdeaVideo(req, res) {
+export async function uploadIdeaVideo(req, res) {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
@@ -74,7 +74,7 @@ async function uploadIdeaVideo(req, res) {
 }
 
 // List ideas
-async function listIdeas(req, res) {
+export async function listIdeas(req, res) {
   try {
     const { status, userId, q, limit, offset } = req.query;
     const ideas = await Idea.findAll({ status, userId, q, limit: Number(limit) || 50, offset: Number(offset) || 0 });
@@ -86,7 +86,7 @@ async function listIdeas(req, res) {
 }
 
 // Get idea by id
-async function getIdeaById(req, res) {
+export async function getIdeaById(req, res) {
   try {
     const { id } = req.params;
     const idea = await Idea.findById(id);
@@ -99,7 +99,7 @@ async function getIdeaById(req, res) {
 }
 
 // Update idea (status/title/description)
-async function updateIdea(req, res) {
+export async function updateIdea(req, res) {
   try {
     const { id } = req.params;
     const updates = req.body || {};
@@ -113,7 +113,7 @@ async function updateIdea(req, res) {
 }
 
 // Delete idea
-async function deleteIdea(req, res) {
+export async function deleteIdea(req, res) {
   try {
     const { id } = req.params;
     const ok = await Idea.delete(id);
@@ -124,13 +124,3 @@ async function deleteIdea(req, res) {
     res.status(500).json({ success: false, message: 'Failed to delete idea' });
   }
 }
-
-module.exports = {
-  createIdea,
-  uploadIdeaAttachments,
-  uploadIdeaVideo,
-  listIdeas,
-  getIdeaById,
-  updateIdea,
-  deleteIdea,
-};
