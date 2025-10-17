@@ -42,36 +42,34 @@ END
 
 GO
 
--- Create indexes for performance (idempotent, only if table exists)
 BEGIN TRY
     IF OBJECT_ID('dbo.Tickets', 'U') IS NOT NULL
     BEGIN
         IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_UserId' AND object_id = OBJECT_ID('dbo.Tickets'))
-            CREATE INDEX IX_Tickets_UserId ON dbo.Tickets(UserId);
+            EXEC('CREATE INDEX IX_Tickets_UserId ON dbo.Tickets(UserId)');
         IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_Status' AND object_id = OBJECT_ID('dbo.Tickets'))
-            CREATE INDEX IX_Tickets_Status ON dbo.Tickets(Status);
+            EXEC('CREATE INDEX IX_Tickets_Status ON dbo.Tickets(Status)');
         IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_Priority' AND object_id = OBJECT_ID('dbo.Tickets'))
-            CREATE INDEX IX_Tickets_Priority ON dbo.Tickets(Priority);
+            EXEC('CREATE INDEX IX_Tickets_Priority ON dbo.Tickets(Priority)');
         IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_CreatedAt' AND object_id = OBJECT_ID('dbo.Tickets'))
-            CREATE INDEX IX_Tickets_CreatedAt ON dbo.Tickets(CreatedAt DESC);
+            EXEC('CREATE INDEX IX_Tickets_CreatedAt ON dbo.Tickets(CreatedAt)');
         IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_PolicyNumber' AND object_id = OBJECT_ID('dbo.Tickets'))
-            CREATE INDEX IX_Tickets_PolicyNumber ON dbo.Tickets(PolicyNumber);
+            EXEC('CREATE INDEX IX_Tickets_PolicyNumber ON dbo.Tickets(PolicyNumber)');
         IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_AssignedTo' AND object_id = OBJECT_ID('dbo.Tickets'))
-            CREATE INDEX IX_Tickets_AssignedTo ON dbo.Tickets(AssignedTo) WHERE AssignedTo IS NOT NULL;
+            EXEC('CREATE INDEX IX_Tickets_AssignedTo ON dbo.Tickets(AssignedTo) WHERE AssignedTo IS NOT NULL');
     END
 END TRY
 BEGIN CATCH
     PRINT '002_create_tickets_table.sql index creation encountered an issue';
 END CATCH
 
--- Composite indexes for common queries (idempotent, only if table exists)
 BEGIN TRY
     IF OBJECT_ID('dbo.Tickets', 'U') IS NOT NULL
     BEGIN
         IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_User_Status' AND object_id = OBJECT_ID('dbo.Tickets'))
-            CREATE INDEX IX_Tickets_User_Status ON dbo.Tickets(UserId, Status);
+            EXEC('CREATE INDEX IX_Tickets_User_Status ON dbo.Tickets(UserId, Status)');
         IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_Status_Priority' AND object_id = OBJECT_ID('dbo.Tickets'))
-            CREATE INDEX IX_Tickets_Status_Priority ON dbo.Tickets(Status, Priority);
+            EXEC('CREATE INDEX IX_Tickets_Status_Priority ON dbo.Tickets(Status, Priority)');
     END
 END TRY
 BEGIN CATCH

@@ -44,19 +44,34 @@ export async function runMigrations() {
       const batches = splitByGo(content);
       for (const batch of batches) {
         const request = pool.request();
-        await request.query(batch);
+        try {
+          await request.query(batch);
+        } catch (err) {
+          const msg = err.message || '';
+          const snippet = batch.split('\n').slice(0, 8).join(' ').slice(0, 300);
+          const preceding = Array.isArray(err.precedingErrors) && err.precedingErrors.length > 0
+            ? err.precedingErrors.map(e => e.message || '').join(' | ')
+            : '';
+          console.error(`Batch failed (${file}): ${msg}\nSnippet: ${snippet}\nPreceding: ${preceding}`);
+          throw err;
+        }
       }
       console.log(`Migration completed: ${file}`);
     } catch (err) {
       const msg = err.message || '';
+      const preceding = Array.isArray(err.precedingErrors) ? err.precedingErrors.map(e => e.message || '') : [];
       // Ignore common idempotent errors (object already exists)
       const ignorable = (
         msg.includes('already an object named') ||
         msg.includes('already exists') ||
-        msg.includes('Cannot create') && msg.includes('because it already exists')
+        (msg.includes('Cannot create') && msg.includes('because it already exists')) ||
+        (
+          msg.includes('Could not create constraint or index') &&
+          preceding.some(p => p.includes('already exists') || p.includes('duplicate') || p.includes('conflict'))
+        )
       );
       if (ignorable) {
-        console.warn(`Migration warning (ignored): ${msg}`);
+        console.warn(`Migration warning (ignored): ${msg}${preceding.length ? ' | Preceding: ' + preceding.join(' | ') : ''}`);
         continue;
       }
       console.error(`Migration failed for ${file}: ${msg}`);
