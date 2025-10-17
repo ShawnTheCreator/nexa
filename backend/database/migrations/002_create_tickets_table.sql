@@ -47,6 +47,8 @@ CREATE INDEX IX_Tickets_AssignedTo ON Tickets(AssignedTo) WHERE AssignedTo IS NO
 CREATE INDEX IX_Tickets_User_Status ON Tickets(UserId, Status);
 CREATE INDEX IX_Tickets_Status_Priority ON Tickets(Status, Priority);
 
+GO
+
 -- Create trigger to update UpdatedAt timestamp
 CREATE TRIGGER TR_Tickets_UpdatedAt
 ON Tickets
@@ -65,3 +67,5 @@ BEGIN
     INNER JOIN inserted i ON t.Id = i.Id
     INNER JOIN deleted o ON t.Id = o.Id;
 END;
+
+GO

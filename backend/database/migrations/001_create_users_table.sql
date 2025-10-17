@@ -37,6 +37,8 @@ CREATE INDEX IX_Users_StudentNumber ON Users(StudentNumber) WHERE StudentNumber 
 CREATE INDEX IX_Users_IsVerified ON Users(IsVerified);
 CREATE INDEX IX_Users_CreatedAt ON Users(CreatedAt);
 
+GO
+
 -- Create trigger to update UpdatedAt timestamp
 CREATE TRIGGER TR_Users_UpdatedAt
 ON Users
@@ -49,3 +51,5 @@ BEGIN
     FROM Users u
     INNER JOIN inserted i ON u.Id = i.Id;
 END;
+
+GO
