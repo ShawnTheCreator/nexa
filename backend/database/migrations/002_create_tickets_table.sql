@@ -1,5 +1,9 @@
--- Create Tickets table
-CREATE TABLE Tickets (
+-- Create Tickets table if it does not exist
+IF NOT EXISTS (
+    SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Tickets]') AND type = N'U'
+)
+BEGIN
+CREATE TABLE dbo.Tickets (
     Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     UserId UNIQUEIDENTIFIER NOT NULL,
     
@@ -31,21 +35,30 @@ CREATE TABLE Tickets (
     ResolvedAt DATETIME2 NULL,
     
     -- Foreign key constraints
-    CONSTRAINT FK_Tickets_Users FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE,
-    CONSTRAINT FK_Tickets_AssignedTo FOREIGN KEY (AssignedTo) REFERENCES Users(Id) ON DELETE SET NULL
+    CONSTRAINT FK_Tickets_Users FOREIGN KEY (UserId) REFERENCES dbo.Users(Id) ON DELETE CASCADE,
+    CONSTRAINT FK_Tickets_AssignedTo FOREIGN KEY (AssignedTo) REFERENCES dbo.Users(Id) ON DELETE SET NULL
 );
+END
 
--- Create indexes for performance
-CREATE INDEX IX_Tickets_UserId ON Tickets(UserId);
-CREATE INDEX IX_Tickets_Status ON Tickets(Status);
-CREATE INDEX IX_Tickets_Priority ON Tickets(Priority);
-CREATE INDEX IX_Tickets_CreatedAt ON Tickets(CreatedAt DESC);
-CREATE INDEX IX_Tickets_PolicyNumber ON Tickets(PolicyNumber);
-CREATE INDEX IX_Tickets_AssignedTo ON Tickets(AssignedTo) WHERE AssignedTo IS NOT NULL;
+-- Create indexes for performance (idempotent)
+IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_UserId' AND object_id = OBJECT_ID('dbo.Tickets'))
+    CREATE INDEX IX_Tickets_UserId ON dbo.Tickets(UserId);
+IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_Status' AND object_id = OBJECT_ID('dbo.Tickets'))
+    CREATE INDEX IX_Tickets_Status ON dbo.Tickets(Status);
+IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_Priority' AND object_id = OBJECT_ID('dbo.Tickets'))
+    CREATE INDEX IX_Tickets_Priority ON dbo.Tickets(Priority);
+IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_CreatedAt' AND object_id = OBJECT_ID('dbo.Tickets'))
+    CREATE INDEX IX_Tickets_CreatedAt ON dbo.Tickets(CreatedAt DESC);
+IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_PolicyNumber' AND object_id = OBJECT_ID('dbo.Tickets'))
+    CREATE INDEX IX_Tickets_PolicyNumber ON dbo.Tickets(PolicyNumber);
+IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_AssignedTo' AND object_id = OBJECT_ID('dbo.Tickets'))
+    CREATE INDEX IX_Tickets_AssignedTo ON dbo.Tickets(AssignedTo) WHERE AssignedTo IS NOT NULL;
 
--- Composite indexes for common queries
-CREATE INDEX IX_Tickets_User_Status ON Tickets(UserId, Status);
-CREATE INDEX IX_Tickets_Status_Priority ON Tickets(Status, Priority);
+-- Composite indexes for common queries (idempotent)
+IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_User_Status' AND object_id = OBJECT_ID('dbo.Tickets'))
+    CREATE INDEX IX_Tickets_User_Status ON dbo.Tickets(UserId, Status);
+IF NOT EXISTS (SELECT name FROM sys.indexes WHERE name = 'IX_Tickets_Status_Priority' AND object_id = OBJECT_ID('dbo.Tickets'))
+    CREATE INDEX IX_Tickets_Status_Priority ON dbo.Tickets(Status, Priority);
 
 GO
 
