@@ -101,15 +101,19 @@ const signup = async (req, res) => {
 };
 
 const login = async (req, res) => {
+  // 🔍 DEBUG LOGS — ADDED HERE
+  console.log("=== LOGIN DEBUG ===");
+  console.log("Raw login body:", req.body);
+  console.log("Email:", req.body.email);
+  console.log("Password:", req.body.password);
+  console.log("Password length:", req.body.password?.length);
+  console.log("Email length:", req.body.email?.length);
+  console.log("Email (quoted):", `"${req.body.email}"`);
+  console.log("Password (quoted):", `"${req.body.password}"`);
+  // 🔍 END DEBUG LOGS
+
   try {
     const { email, password } = req.body;
-
-    // DEBUG: Log login attempt
-    console.log('🔍 Login attempt:', { 
-      email, 
-      passwordLength: password?.length,
-      passwordProvided: !!password 
-    });
 
     // Check if email and password are provided
     if (!email || !password) {
@@ -121,38 +125,21 @@ const login = async (req, res) => {
 
     // Find user by email
     const user = await User.findByEmail(email);
-    
-    // DEBUG: Check if user exists
-    console.log('👤 User found:', user ? 'YES' : 'NO');
-    
     if (!user) {
-      console.log('❌ No user found with email:', email);
       return res.status(400).json({ 
         success: false, 
         message: "Invalid email or password" 
       });
     }
-
-    // DEBUG: Check password hash format
-    console.log('🔒 Stored password hash preview:', user.password?.substring(0, 20) + '...');
-    console.log('🔒 Hash starts with $2b$ or $2a$?', user.password?.startsWith('$2b$') || user.password?.startsWith('$2a$'));
-    console.log('🔒 Hash length:', user.password?.length);
 
     // Check password
     const isPasswordValid = await user.comparePassword(password);
-    
-    // DEBUG: Password comparison result
-    console.log('✅ Password comparison result:', isPasswordValid);
-    
     if (!isPasswordValid) {
-      console.log('❌ Password validation failed for user:', email);
       return res.status(400).json({ 
         success: false, 
         message: "Invalid email or password" 
       });
     }
-
-    console.log('✅ Login successful for user:', email);
 
     // Update last login
     await user.update({ lastLogin: new Date() });
@@ -166,8 +153,7 @@ const login = async (req, res) => {
       user: user.toJSON(),
     });
   } catch (error) {
-    console.error('❌ Login error:', error.message);
-    console.error('Full error:', error);
+    console.error('Login error:', error.message);
     res.status(500).json({ 
       success: false, 
       message: "Error logging in" 
