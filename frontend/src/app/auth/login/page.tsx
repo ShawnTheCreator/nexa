@@ -37,9 +37,9 @@ export default function LoginPage() {
     setSuccess(null);
     setLoading(true);
 
-    // ✅ Get real values from the form
+    // Get real form values
     const formData = new FormData(e.currentTarget);
-    const email = (formData.get('email') as string).trim();
+    const email = (formData.get('email') as string)?.trim();
     const password = formData.get('password') as string;
 
     // Frontend validation
@@ -52,29 +52,37 @@ export default function LoginPage() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        credentials: 'include', // ✅ Critical for sending cookies
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
       const contentType = res.headers.get('content-type') || '';
       let data: any = null;
+
       if (contentType.includes('application/json')) {
         data = await res.json();
       } else {
+        // Log non-JSON responses (likely HTML error pages)
         const text = await res.text();
-        data = { message: text };
+        console.error('Non-JSON response from login:', text);
+        data = { message: 'Server error. Please try again later.' };
       }
 
       if (!res.ok || (data && data.success === false)) {
         setError(data?.message || 'Login failed. Please check your credentials.');
       } else {
         setSuccess('Logged in successfully!');
-        // Optional: redirect after success
-        setTimeout(() => (window.location.href = '/ideas'), 1000);
+        // Redirect after brief success message
+        setTimeout(() => {
+          window.location.href = '/ideas';
+        }, 1000);
       }
     } catch (err: any) {
-      setError(err?.message || 'Network error. Please try again.');
+      console.error('Login network error:', err);
+      setError(err?.message || 'Network error. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -111,14 +119,18 @@ export default function LoginPage() {
             className="flex w-full items-center justify-center space-x-2 rounded-tremor-default border border-tremor-border bg-tremor-background py-2 text-tremor-content-strong shadow-tremor-input hover:bg-tremor-background-subtle dark:border-dark-tremor-border dark:bg-dark-tremor-background dark:text-dark-tremor-content-strong dark:shadow-dark-tremor-input hover:dark:bg-dark-tremor-background-subtle"
           >
             <GitHubIcon className="size-5" aria-hidden={true} />
-            <span className="text-tremor-default font-medium">Login with GitHub</span>
+            <span className="text-tremor-default font-medium">
+              Login with GitHub
+            </span>
           </a>
           <a
             href="#"
             className="mt-2 flex w-full items-center justify-center space-x-2 rounded-tremor-default border border-tremor-border bg-tremor-background py-2 text-tremor-content-strong shadow-tremor-input hover:bg-tremor-background-subtle dark:border-dark-tremor-border dark:bg-dark-tremor-background dark:text-dark-tremor-content-strong dark:shadow-dark-tremor-input hover:dark:bg-dark-tremor-background-subtle sm:mt-0"
           >
             <GoogleIcon className="size-4" aria-hidden={true} />
-            <span className="text-tremor-default font-medium">Login with Google</span>
+            <span className="text-tremor-default font-medium">
+              Login with Google
+            </span>
           </a>
         </div>
 

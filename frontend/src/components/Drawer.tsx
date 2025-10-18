@@ -1,19 +1,18 @@
 // Tremor Drawer [v0.0.1]
 
-import * as DrawerPrimitives from "@radix-ui/react-dialog"
-import { RiCloseLine } from "@remixicon/react"
-import * as React from "react"
+import * as DrawerPrimitives from "@radix-ui/react-dialog";
+import { RiCloseLine } from "@remixicon/react";
+import * as React from "react";
 
-import { cx, focusRing } from "@/lib/utils"
-
-import { Button } from "./Button"
+import { cx, focusRing } from "@/lib/utils";
+import { Button } from "./Button";
 
 const Drawer = (
-  props: React.ComponentPropsWithoutRef<typeof DrawerPrimitives.Root>,
+  props: React.ComponentPropsWithoutRef<typeof DrawerPrimitives.Root>
 ) => {
-  return <DrawerPrimitives.Root tremor-id="tremor-raw" {...props} />
-}
-Drawer.displayName = "Drawer"
+  return <DrawerPrimitives.Root tremor-id="tremor-raw" {...props} />;
+};
+Drawer.displayName = "Drawer";
 
 const DrawerTrigger = React.forwardRef<
   React.ComponentRef<typeof DrawerPrimitives.Trigger>,
@@ -21,9 +20,9 @@ const DrawerTrigger = React.forwardRef<
 >(({ className, ...props }, ref) => {
   return (
     <DrawerPrimitives.Trigger ref={ref} className={cx(className)} {...props} />
-  )
-})
-DrawerTrigger.displayName = "Drawer.Trigger"
+  );
+});
+DrawerTrigger.displayName = "Drawer.Trigger";
 
 const DrawerClose = React.forwardRef<
   React.ComponentRef<typeof DrawerPrimitives.Close>,
@@ -31,13 +30,12 @@ const DrawerClose = React.forwardRef<
 >(({ className, ...props }, ref) => {
   return (
     <DrawerPrimitives.Close ref={ref} className={cx(className)} {...props} />
-  )
-})
-DrawerClose.displayName = "Drawer.Close"
+  );
+});
+DrawerClose.displayName = "Drawer.Close";
 
-const DrawerPortal = DrawerPrimitives.Portal
-
-DrawerPortal.displayName = "DrawerPortal"
+const DrawerPortal = DrawerPrimitives.Portal;
+DrawerPortal.displayName = "DrawerPortal";
 
 const DrawerOverlay = React.forwardRef<
   React.ComponentRef<typeof DrawerPrimitives.Overlay>,
@@ -48,12 +46,12 @@ const DrawerOverlay = React.forwardRef<
       ref={forwardedRef}
       className={cx(
         // base
-        "fixed inset-0 z-50 overflow-y-auto",
-        // background color
+        "fixed inset-0 z-50",
+        // background
         "bg-black/30 backdrop-blur-sm",
         // transition
         "data-[state=closed]:animate-hide data-[state=open]:animate-dialogOverlayShow",
-        className,
+        className
       )}
       {...props}
       style={{
@@ -61,10 +59,9 @@ const DrawerOverlay = React.forwardRef<
         animationFillMode: "backwards",
       }}
     />
-  )
-})
-
-DrawerOverlay.displayName = "DrawerOverlay"
+  );
+});
+DrawerOverlay.displayName = "DrawerOverlay";
 
 const DrawerContent = React.forwardRef<
   React.ComponentRef<typeof DrawerPrimitives.Content>,
@@ -76,25 +73,26 @@ const DrawerContent = React.forwardRef<
         <DrawerPrimitives.Content
           ref={forwardedRef}
           className={cx(
-            // base
-            "fixed inset-y-2 mx-auto flex w-[95vw] flex-1 flex-col overflow-y-auto rounded-md border p-4 shadow-lg focus:outline-none max-sm:inset-x-2 sm:inset-y-2 sm:right-2 sm:max-w-lg sm:p-6",
-            // border color
-            "border-gray-200 dark:border-gray-900",
-            // background color
-            "bg-white dark:bg-[#090E1A]",
-            // transition
+            // Base layout
+            "fixed inset-y-2 mx-auto flex w-[95vw] flex-1 flex-col overflow-hidden rounded-md border shadow-lg focus:outline-none",
+            // Responsive positioning
+            "max-sm:inset-x-2 sm:inset-y-2 sm:right-2 sm:max-w-lg",
+            // Padding (increased for form comfort)
+            "p-4 sm:p-6",
+            // Border & background
+            "border-gray-200 dark:border-gray-900 bg-white dark:bg-[#090E1A]",
+            // Animation
             "data-[state=closed]:animate-drawerSlideRightAndFade data-[state=open]:animate-drawerSlideLeftAndFade",
             focusRing,
-            className,
+            className
           )}
           {...props}
         />
       </DrawerOverlay>
     </DrawerPortal>
-  )
-})
-
-DrawerContent.displayName = "DrawerContent"
+  );
+});
+DrawerContent.displayName = "DrawerContent";
 
 const DrawerHeader = React.forwardRef<
   HTMLDivElement,
@@ -118,10 +116,9 @@ const DrawerHeader = React.forwardRef<
         </Button>
       </DrawerPrimitives.Close>
     </div>
-  )
-})
-
-DrawerHeader.displayName = "Drawer.Header"
+  );
+});
+DrawerHeader.displayName = "Drawer.Header";
 
 const DrawerTitle = React.forwardRef<
   React.ComponentRef<typeof DrawerPrimitives.Title>,
@@ -130,25 +127,27 @@ const DrawerTitle = React.forwardRef<
   <DrawerPrimitives.Title
     ref={forwardedRef}
     className={cx(
-      // base
-      "text-base font-semibold",
-      // text color
-      "text-gray-900 dark:text-gray-50",
-      className,
+      "text-base font-semibold text-gray-900 dark:text-gray-50",
+      className
     )}
     {...props}
   />
-))
-
-DrawerTitle.displayName = "DrawerTitle"
+));
+DrawerTitle.displayName = "DrawerTitle";
 
 const DrawerBody = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<"div">
 >(({ className, ...props }, ref) => {
-  return <div ref={ref} className={cx("flex-1 py-4", className)} {...props} />
-})
-DrawerBody.displayName = "Drawer.Body"
+  return (
+    <div
+      ref={ref}
+      className={cx("flex-1 py-2 overflow-y-auto", className)} // Slight padding reduction for denser forms
+      {...props}
+    />
+  );
+});
+DrawerBody.displayName = "Drawer.Body";
 
 const DrawerDescription = React.forwardRef<
   React.ComponentRef<typeof DrawerPrimitives.Description>,
@@ -160,10 +159,9 @@ const DrawerDescription = React.forwardRef<
       className={cx("text-gray-500 dark:text-gray-500", className)}
       {...props}
     />
-  )
-})
-
-DrawerDescription.displayName = "DrawerDescription"
+  );
+});
+DrawerDescription.displayName = "DrawerDescription";
 
 const DrawerFooter = ({
   className,
@@ -172,15 +170,14 @@ const DrawerFooter = ({
   return (
     <div
       className={cx(
-        "flex flex-col-reverse border-t border-gray-200 pt-4 sm:flex-row sm:justify-end sm:space-x-2 dark:border-gray-900",
-        className,
+        "flex flex-col-reverse gap-3 pt-4 border-t border-gray-200 dark:border-gray-900 sm:flex-row sm:justify-end",
+        className
       )}
       {...props}
     />
-  )
-}
-
-DrawerFooter.displayName = "DrawerFooter"
+  );
+};
+DrawerFooter.displayName = "DrawerFooter";
 
 export {
   Drawer,
@@ -192,4 +189,4 @@ export {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-}
+};
