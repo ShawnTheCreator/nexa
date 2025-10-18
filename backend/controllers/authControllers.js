@@ -34,13 +34,27 @@ const signup = async (req, res) => {
         success: false, 
         message: "Please provide a valid email address" 
       });
-     }
+    }
 
-    // Validate password strength
-    if (password.length < 6) {
+    // 🔒 ENHANCED PASSWORD VALIDATION
+    const passwordErrors = [];
+    if (password.length < 8) {
+      passwordErrors.push("at least 8 characters long");
+    }
+    if (!/[A-Z]/.test(password)) {
+      passwordErrors.push("at least one uppercase letter");
+    }
+    if (!/[a-z]/.test(password)) {
+      passwordErrors.push("at least one lowercase letter");
+    }
+    if (!/\d/.test(password)) {
+      passwordErrors.push("at least one number");
+    }
+
+    if (passwordErrors.length > 0) {
       return res.status(400).json({ 
         success: false, 
-        message: "Password must be at least 6 characters long" 
+        message: `Password must be ${passwordErrors.join(", and ")}.`
       });
     }
 
