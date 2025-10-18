@@ -71,7 +71,7 @@ export default function LoginPage() {
       } else {
         setSuccess('Logged in successfully!');
         // Optional: redirect after success
-        // setTimeout(() => (window.location.href = '/dashboard'), 1000);
+        setTimeout(() => (window.location.href = '/ideas'), 1000);
       }
     } catch (err: any) {
       setError(err?.message || 'Network error. Please try again.');
