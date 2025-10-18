@@ -26,7 +26,7 @@ const Logo = (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export default function Example() {
+export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,11 +36,20 @@ export default function Example() {
     setError(null);
     setSuccess(null);
     setLoading(true);
-    try {
-      const formData = new FormData(e.currentTarget);
-      const email = formData.get('email') as string;
-      const password = formData.get('password') as string;
 
+    // ✅ Get real values from the form
+    const formData = new FormData(e.currentTarget);
+    const email = (formData.get('email') as string).trim();
+    const password = formData.get('password') as string;
+
+    // Frontend validation
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      setLoading(false);
+      return;
+    }
+
+    try {
       const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         credentials: 'include',
@@ -58,125 +67,128 @@ export default function Example() {
       }
 
       if (!res.ok || (data && data.success === false)) {
-        setError(data?.message || 'Login failed');
+        setError(data?.message || 'Login failed. Please check your credentials.');
       } else {
-        setSuccess(data?.message || 'Logged in successfully');
+        setSuccess('Logged in successfully!');
+        // Optional: redirect after success
+        // setTimeout(() => (window.location.href = '/dashboard'), 1000);
       }
     } catch (err: any) {
-      setError(err?.message || 'Network error');
+      setError(err?.message || 'Network error. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <>
-      <div className="flex min-h-screen flex-1 flex-col justify-center px-4 py-10 lg:px-6 bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-100 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="flex flex-col items-center space-y-2.5">
-              <Logo
-                className="h-10 w-10 text-tremor-content-strong dark:text-dark-tremor-content-strong"
-                aria-hidden={true}
-              />
-              <p className="font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
-                Nexa
-              </p>
-            </div>
-          <h3 className="mt-6 text-tremor-title font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-            Sign in to your account
-          </h3>
-          <p className="mt-2 text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-            Don't have an account?{' '}
-            <Link
-              href="/auth/register"
-              className="font-medium text-tremor-brand hover:text-tremor-brand-emphasis dark:text-dark-tremor-brand hover:dark:text-dark-tremor-brand-emphasis"
-            >
-              Sign up
-            </Link>
-          </p>
-          <div className="mt-8 sm:flex sm:items-center sm:space-x-2">
-            <a
-              href="#"
-              className="flex w-full items-center justify-center space-x-2 rounded-tremor-default border border-tremor-border bg-tremor-background py-2 text-tremor-content-strong shadow-tremor-input hover:bg-tremor-background-subtle dark:border-dark-tremor-border dark:bg-dark-tremor-background dark:text-dark-tremor-content-strong dark:shadow-dark-tremor-input hover:dark:bg-dark-tremor-background-subtle"
-            >
-              <GitHubIcon className="size-5" aria-hidden={true} />
-              <span className="text-tremor-default font-medium">
-                Login with GitHub
-              </span>
-            </a>
-            <a
-              href="#"
-              className="mt-2 flex w-full items-center justify-center space-x-2 rounded-tremor-default border border-tremor-border bg-tremor-background py-2 text-tremor-content-strong shadow-tremor-input hover:bg-tremor-background-subtle dark:border-dark-tremor-border dark:bg-dark-tremor-background dark:text-dark-tremor-content-strong dark:shadow-dark-tremor-input hover:dark:bg-dark-tremor-background-subtle sm:mt-0"
-            >
-              <GoogleIcon className="size-4" aria-hidden={true} />
-              <span className="text-tremor-default font-medium">
-                Login with Google
-              </span>
-            </a>
-          </div>
-          <Divider>or</Divider>
-          {error && (
-            <div role="alert" className="mt-4 rounded-tremor-default border border-red-300 bg-red-50 px-3 py-2 text-red-700 dark:border-red-700 dark:bg-red-900/30 dark:text-red-200">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div role="status" className="mt-4 rounded-tremor-default border border-green-300 bg-green-50 px-3 py-2 text-green-700 dark:border-green-700 dark:bg-green-900/30 dark:text-green-200">
-              {success}
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="text-tremor-default font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong"
-              >
-                Email
-              </label>
-              <TextInput
-                type="email"
-                id="email"
-                name="email"
-                autoComplete="email" required
-                placeholder="name@eduvos.com"
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="password"
-                className="text-tremor-default font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong"
-              >
-                Password
-              </label>
-              <TextInput
-                type="password"
-                id="password"
-                name="password"
-                autoComplete="password"
-                placeholder="Password" required
-                className="mt-2"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-4 w-full whitespace-nowrap rounded-tremor-default bg-tremor-brand py-2 text-center text-tremor-default font-medium text-tremor-brand-inverted shadow-tremor-input hover:bg-tremor-brand-emphasis disabled:opacity-60 disabled:cursor-not-allowed dark:bg-dark-tremor-brand dark:text-dark-tremor-brand-inverted dark:shadow-dark-tremor-input dark:hover:bg-dark-tremor-brand-emphasis"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </form>
-          <p className="mt-6 text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-            Forgot your password?{' '}
-            <Link
-              href="/auth/reset"
-              className="font-medium text-tremor-brand hover:text-tremor-brand-emphasis dark:text-dark-tremor-brand hover:dark:text-dark-tremor-brand-emphasis"
-            >
-              Reset password
-            </Link>
+    <div className="flex min-h-screen flex-1 flex-col justify-center px-4 py-10 lg:px-6 bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-100 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex flex-col items-center space-y-2.5">
+          <Logo
+            className="h-10 w-10 text-tremor-content-strong dark:text-dark-tremor-content-strong"
+            aria-hidden={true}
+          />
+          <p className="font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong">
+            Nexa
           </p>
         </div>
+        <h3 className="mt-6 text-tremor-title font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+          Sign in to your account
+        </h3>
+        <p className="mt-2 text-tremor-default text-tremor-content dark:text-dark-tremor-content">
+          Don't have an account?{' '}
+          <Link
+            href="/auth/register"
+            className="font-medium text-tremor-brand hover:text-tremor-brand-emphasis dark:text-dark-tremor-brand hover:dark:text-dark-tremor-brand-emphasis"
+          >
+            Sign up
+          </Link>
+        </p>
+
+        <div className="mt-8 sm:flex sm:items-center sm:space-x-2">
+          <a
+            href="#"
+            className="flex w-full items-center justify-center space-x-2 rounded-tremor-default border border-tremor-border bg-tremor-background py-2 text-tremor-content-strong shadow-tremor-input hover:bg-tremor-background-subtle dark:border-dark-tremor-border dark:bg-dark-tremor-background dark:text-dark-tremor-content-strong dark:shadow-dark-tremor-input hover:dark:bg-dark-tremor-background-subtle"
+          >
+            <GitHubIcon className="size-5" aria-hidden={true} />
+            <span className="text-tremor-default font-medium">Login with GitHub</span>
+          </a>
+          <a
+            href="#"
+            className="mt-2 flex w-full items-center justify-center space-x-2 rounded-tremor-default border border-tremor-border bg-tremor-background py-2 text-tremor-content-strong shadow-tremor-input hover:bg-tremor-background-subtle dark:border-dark-tremor-border dark:bg-dark-tremor-background dark:text-dark-tremor-content-strong dark:shadow-dark-tremor-input hover:dark:bg-dark-tremor-background-subtle sm:mt-0"
+          >
+            <GoogleIcon className="size-4" aria-hidden={true} />
+            <span className="text-tremor-default font-medium">Login with Google</span>
+          </a>
+        </div>
+
+        <Divider>or</Divider>
+
+        {error && (
+          <div role="alert" className="mt-4 rounded-tremor-default border border-red-300 bg-red-50 px-3 py-2 text-red-700 dark:border-red-700 dark:bg-red-900/30 dark:text-red-200">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div role="status" className="mt-4 rounded-tremor-default border border-green-300 bg-green-50 px-3 py-2 text-green-700 dark:border-green-700 dark:bg-green-900/30 dark:text-green-200">
+            {success}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div>
+            <label
+              htmlFor="email"
+              className="text-tremor-default font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong"
+            >
+              Email
+            </label>
+            <TextInput
+              type="email"
+              id="email"
+              name="email"
+              autoComplete="email"
+              required
+              placeholder="name@eduvos.com"
+              className="mt-2"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="text-tremor-default font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong"
+            >
+              Password
+            </label>
+            <TextInput
+              type="password"
+              id="password"
+              name="password"
+              autoComplete="current-password"
+              placeholder="Password"
+              required
+              className="mt-2"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-4 w-full whitespace-nowrap rounded-tremor-default bg-tremor-brand py-2 text-center text-tremor-default font-medium text-tremor-brand-inverted shadow-tremor-input hover:bg-tremor-brand-emphasis disabled:opacity-60 disabled:cursor-not-allowed dark:bg-dark-tremor-brand dark:text-dark-tremor-brand-inverted dark:shadow-dark-tremor-input dark:hover:bg-dark-tremor-brand-emphasis"
+          >
+            {loading ? 'Signing in...' : 'Sign in'}
+          </button>
+        </form>
+
+        <p className="mt-6 text-tremor-default text-tremor-content dark:text-dark-tremor-content">
+          Forgot your password?{' '}
+          <Link
+            href="/auth/reset"
+            className="font-medium text-tremor-brand hover:text-tremor-brand-emphasis dark:text-dark-tremor-brand hover:dark:text-dark-tremor-brand-emphasis"
+          >
+            Reset password
+          </Link>
+        </p>
       </div>
-    </>
+    </div>
   );
 }
