@@ -56,7 +56,9 @@ export function ChatModal() {
             }
             // Older style: choices -> [{ text }]
             else if (Array.isArray(prov.choices) && prov.choices.length) {
-              botText = prov.choices.map(c => c.text || c.message?.content || '').join('\n')
+              botText = prov.choices
+                .map((c: { text?: string; message?: { content?: string } }) => c.text || c.message?.content || '')
+                .join('\n')
             }
             // Direct text field
             else if (typeof prov.text === 'string') {
