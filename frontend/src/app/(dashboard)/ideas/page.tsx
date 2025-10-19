@@ -5,6 +5,8 @@ import { Button } from "@/components/Button";
 import { Divider } from "@/components/dashboard/Divider";
 import { TicketDrawer } from "@/components/ui/TicketDrawer";
 import { IdeaDrawer } from "@/components/ui/IdeaDrawer";
+import { IdeaCard } from "@/components/ui/IdeaCard";
+import { IdeaDetailDrawer } from "@/components/ui/IdeaDetailDrawer";
 import { RiAddLine } from "@remixicon/react";
 import { Input } from "@/components/Input";
 import { API_BASE_URL } from "@/lib/api";
@@ -16,6 +18,7 @@ export default function IdeasDashboard() {
   const [search, setSearch] = React.useState("");
   const [debouncedSearch] = useDebounce(search, 400);
   const [ideas, setIdeas] = React.useState<any[]>([]);
+  const [activeIdeaId, setActiveIdeaId] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
@@ -88,25 +91,13 @@ export default function IdeasDashboard() {
 
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           {ideas.map((idea) => (
-            <div key={idea.id} className="rounded border p-4">
-              <div className="flex items-start justify-between">
-                <h3 className="font-medium text-gray-900 dark:text-gray-100 break-words">
-                  {idea.title}
-                </h3>
-                <span className="text-xs text-gray-500 whitespace-nowrap">
-                  {new Date(idea.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 break-words">
-                {idea.description}
-              </p>
-              <div className="mt-3 text-xs text-gray-500">Status: {idea.status}</div>
-            </div>
+            <IdeaCard key={idea.id} idea={idea} onClick={() => setActiveIdeaId(idea.id)} />
           ))}
           {ideas.length === 0 && !loading ? (
             <p className="col-span-full text-sm text-gray-500">No ideas found.</p>
           ) : null}
         </div>
+        <IdeaDetailDrawer open={!!activeIdeaId} onOpenChange={(v) => { if (!v) setActiveIdeaId(null) }} ideaId={activeIdeaId || undefined} />
       </div>
     </main>
   );

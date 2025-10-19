@@ -12,6 +12,8 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import ideaRoutes from "./routes/ideaRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import debugRoutes from "./routes/debugRoutes.js";
+import commentRoutes from "./routes/commentRoutes.js";
+import moderationRoutes from "./routes/moderationRoutes.js";
 
 dotenv.config();
 
@@ -56,6 +58,8 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/ideas", ideaRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/debug", debugRoutes);
+app.use("/api/ideas", commentRoutes);
+app.use("/api/moderation", moderationRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {

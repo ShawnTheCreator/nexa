@@ -32,6 +32,45 @@ export function IdeaDrawer({ open, onOpenChange }: IdeaDrawerProps) {
     try {
       setIsSubmitting(true)
       setError(null)
+      // Basic moderation check before submitting (requires auth)
+      try {
+        const modRes = await fetch(`${API_BASE_URL}/api/moderation/text`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: `${title}\n\n${description}` }),
+        })
+        const modJson = await modRes.json()
+        if (modJson && modJson.ok === false) {
+          throw new Error('Your idea contains content that is not allowed: ' + (modJson.reasons || []).join(', '))
+        }
+      } catch (mErr) {
+        throw mErr
+      }
+
+      // Ensure there's at least one image attachment
+      const hasImage = attachments && Array.from(attachments).some((f) => f.type.startsWith('image/'))
+      if (!hasImage) {
+        throw new Error('Please upload at least one image for your idea (compulsory)')
+      }
+
+      // Check video length client-side if provided
+      if (video) {
+        // Attempt to check duration via blob URL (best-effort)
+        const url = URL.createObjectURL(video)
+        const vidEl = document.createElement('video')
+        const loaded = await new Promise<boolean>((resolve) => {
+          vidEl.preload = 'metadata'
+          vidEl.src = url
+          vidEl.onloadedmetadata = () => {
+            URL.revokeObjectURL(url)
+            resolve(vidEl.duration <= 60)
+          }
+          vidEl.onerror = () => resolve(false)
+        })
+        if (!loaded) throw new Error('Video must be 60 seconds or less')
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/ideas`, {
         method: "POST",
         credentials: "include",
