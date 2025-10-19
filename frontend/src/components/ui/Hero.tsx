@@ -1,4 +1,4 @@
-import { RiPlayCircleFill } from "@remixicon/react";
+// RiPlayCircleFill was unused and removed
 import Link from "next/link";
 import { Button } from "../Button";
 import HeroImage from "./HeroImage";

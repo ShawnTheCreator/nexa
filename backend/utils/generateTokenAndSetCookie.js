@@ -35,14 +35,34 @@ export function getCookieOptions(req) {
   // If origin is different from backend host, treat as cross-site and require None+Secure
   const isCrossSite = originHost && backendHost && originHost !== backendHost;
 
-  if (isCrossSite || process.env.FRONTEND_URL) {
-    // Modern browser requirement for third-party cookies: SameSite=None and Secure
+  // Determine if the incoming request is using HTTPS
+  const forwardedProto = req && (req.headers['x-forwarded-proto'] || req.headers['X-Forwarded-Proto']);
+  const isRequestHttps = !!(req && (req.secure || forwardedProto === 'https'));
+
+  // If the environment explicitly provides FRONTEND_URL or COOKIE_DOMAIN, or we're in production,
+  // prefer SameSite=None and Secure=true so hosted backends work with cross-origin frontends.
+  // This mirrors previous behavior that worked for hosted deployments (e.g., Render, Vercel).
+  if (process.env.FRONTEND_URL || process.env.COOKIE_DOMAIN || isProd) {
     opts.sameSite = 'none';
     opts.secure = true;
   } else {
-    // local/same-origin friendly defaults
-    opts.sameSite = isProd ? 'none' : 'lax';
-    opts.secure = !!isProd;
+    // Only set Secure=true when the incoming request is HTTPS. Browsers ignore Secure cookies over HTTP.
+    if (isCrossSite) {
+      if (isRequestHttps) {
+        opts.sameSite = 'none';
+        opts.secure = true;
+      } else {
+        // Can't set SameSite=None+Secure over HTTP. Fall back to lax for local dev,
+        // but cross-site requests may not include the cookie. Recommend running over HTTPS (or use a tunnel).
+        console.warn('Cross-site cookie requested but incoming request is not HTTPS. SameSite=None requires Secure and HTTPS; falling back to SameSite=lax for local dev. For full cross-origin cookie support run backend/frontend over HTTPS or set COOKIE_DOMAIN correctly.');
+        opts.sameSite = 'lax';
+        opts.secure = false;
+      }
+    } else {
+      // same-origin or unknown origin: prefer lax in dev
+      opts.sameSite = 'lax';
+      opts.secure = false;
+    }
   }
 
   if (backendHost && backendHost !== 'localhost') {

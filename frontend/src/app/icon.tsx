@@ -23,6 +23,6 @@ export default function Icon() {
         N
       </div>
     ),
-    { size }
+    { width: size.width, height: size.height }
   );
 }

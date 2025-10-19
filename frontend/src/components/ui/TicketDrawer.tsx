@@ -25,6 +25,8 @@ import {
   ticketTypes,
   type Category,
   type PolicyType,
+  type TicketType,
+  type Priority,
   type Ticket,
 } from "@/data/ideas/schema"
 import React from "react"
@@ -87,12 +89,12 @@ const FirstPage = ({ formData, onUpdateForm }: FormPageProps) => (
         <RadioCardGroup
           defaultValue={formData.type}
           className="grid grid-cols-2 gap-2 text-sm"
-          onValueChange={(value) => onUpdateForm({ type: value })}
+          onValueChange={(value) => onUpdateForm({ type: value as TicketType })}
         >
-          {ticketTypes.map((type: { value: React.Key | null | undefined; name: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; extended: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined }) => (
+          {ticketTypes.map((type: { value: any; name: React.ReactNode; extended: React.ReactNode }) => (
             <RadioCardItem
-              key={type.value}
-              value={type.value}
+              key={String(type.value)}
+              value={String(type.value)}
               className="flex flex-col justify-start p-2.5 text-base duration-75 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 data-[state=checked]:border-transparent data-[state=checked]:bg-blue-500 data-[state=checked]:text-white sm:text-sm dark:focus:ring-blue-500"
             >
               {type.name}
@@ -113,10 +115,10 @@ const FirstPage = ({ formData, onUpdateForm }: FormPageProps) => (
             <SelectValue placeholder="Select Category" />
           </SelectTrigger>
           <SelectContent>
-            {categoryTypes.map((category: { value: React.Key | null | undefined; name: string; description: string | boolean }) => (
+            {categoryTypes.map((category: { value: any; name: string; description: string | boolean }) => (
               <SelectItemExtended
-                key={category.value}
-                value={category.value}
+                key={String(category.value)}
+                value={String(category.value)}
                 option={category.name}
                 description={category.description}
               />
@@ -136,10 +138,10 @@ const FirstPage = ({ formData, onUpdateForm }: FormPageProps) => (
             <SelectValue placeholder="Select Policy Type" />
           </SelectTrigger>
           <SelectContent>
-            {policyTypes.map((type: { value: React.Key | null | undefined; name: string; description: string | boolean }) => (
+            {policyTypes.map((type: { value: any; name: string; description: string | boolean }) => (
               <SelectItemExtended
-                key={type.value}
-                value={type.value}
+                key={String(type.value)}
+                value={String(type.value)}
                 option={type.name}
                 description={type.description}
               />
@@ -176,12 +178,12 @@ const SecondPage = ({ formData, onUpdateForm }: FormPageProps) => (
         <RadioCardGroup
           defaultValue={formData.priority}
           className="grid grid-cols-1 gap-2 text-sm"
-          onValueChange={(value) => onUpdateForm({ priority: value })}
+          onValueChange={(value) => onUpdateForm({ priority: value as Priority })}
         >
-          {priorities.map((priority: { value: React.Key | null | undefined; label: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; sla: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined; description: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined }) => (
+          {priorities.map((priority: { value: any; label: string; sla: string; description: React.ReactNode }) => (
             <RadioCardItem
-              key={priority.value}
-              value={priority.value}
+              key={String(priority.value)}
+              value={String(priority.value)}
               className="p-2.5 text-base duration-75 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 data-[state=checked]:border-transparent data-[state=checked]:bg-blue-500 data-[state=checked]:text-white sm:text-sm dark:focus:ring-blue-500"
             >
               <div className="flex items-center justify-between">
@@ -214,7 +216,7 @@ const SecondPage = ({ formData, onUpdateForm }: FormPageProps) => (
           type="number"
           value={formData.duration || ""}
           onChange={(e) => {
-            onUpdateForm({ duration: e.target.value || null })
+            onUpdateForm({ duration: e.target.value || undefined })
           }}
           placeholder="0"
           min="0"

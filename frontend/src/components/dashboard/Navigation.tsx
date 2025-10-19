@@ -2,6 +2,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { TabNavigation, TabNavigationLink } from "@/components/dashboard/TabNavigation"
+import React from "react"
+import { API_BASE_URL } from "@/lib/api"
 
 const Logo = (props: any) => (
   <svg fill="#a855f7" viewBox="0 0 24 24" {...props}>
@@ -14,6 +16,29 @@ const Logo = (props: any) => (
 
 function Navigation() {
   const pathname = usePathname()
+  const [profile, setProfile] = React.useState<any | null>(null)
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/profile`, { credentials: 'include' })
+        if (res.ok) {
+          const json = await res.json()
+          setProfile(json.user || null)
+        }
+      } catch (err) {
+        // ignore
+      }
+    })()
+  }, [])
+
+  async function logout() {
+    try {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' })
+    } finally {
+      window.location.href = '/auth/login'
+    }
+  }
   return (
     <div className="shadow-s sticky top-0 z-20 bg-white dark:bg-gray-950">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 pt-3">
@@ -22,8 +47,30 @@ function Navigation() {
           <Logo className="h-10 w-10"/>
           <h3 className="font-bold">Nexa</h3>
         </div>
+        <div className="flex items-center gap-4">
+          {profile ? (
+            <div className="relative flex items-center gap-3">
+              {profile.ProfilePicUrl ? (
+                <img src={profile.ProfilePicUrl} alt="profile" className="h-8 w-8 rounded-full object-cover" style={{ boxShadow: '0 0 0 2px #4f47e6' }} />
+              ) : (
+                <div className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium" style={{ backgroundColor: '#4f47e6', color: '#ffffff' }}>
+                  {((profile.firstName || '').charAt(0) + (profile.lastName || '').charAt(0)).toUpperCase()}
+                </div>
+              )}
+              <div className="text-sm">{profile.firstName} {profile.lastName}</div>
+              <div className="relative">
+                <button className="ml-2 px-2 py-1 rounded bg-indigo-700 text-white focus:outline-none focus:ring-0" onClick={() => { const el = document.getElementById('profile-menu'); if (el) el.classList.toggle('hidden') }}>⋯</button>
+                <div id="profile-menu" className="hidden absolute right-0 mt-2 w-44 rounded bg-indigo-700 text-white p-2 shadow-none ring-0">
+                  <Link href="/settings" className="block px-2 py-1">Settings</Link>
+                  <button onClick={logout} className="w-full text-left px-2 py-1">Logout</button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+          
+        </div>
       </div>
-  <TabNavigation className="mt-5">
+      <TabNavigation className="mt-5">
     <div className="mx-auto flex w-full max-w-7xl items-center px-6">
       <TabNavigationLink
         className="inline-flex gap-2"
@@ -42,38 +89,19 @@ function Navigation() {
       <TabNavigationLink
         className="inline-flex gap-2"
         asChild
-        active={pathname === "/assistant"}
-      >
-        <Link href="/assistant">Assistant</Link>
-      </TabNavigationLink>
-      <TabNavigationLink
-        className="inline-flex gap-2"
-        asChild
         active={pathname === "/chat"}
       >
         <Link href="/chat">Chat</Link>
       </TabNavigationLink>
-      <TabNavigationLink
-        className="inline-flex gap-2"
-        asChild
-        active={pathname === "/admin"}
-      >
-        <Link href="/admin">Admin</Link>
-      </TabNavigationLink>
-      <TabNavigationLink
-        className="inline-flex gap-2"
-        asChild
-        active={pathname === "/voting"}
-      >
-        <Link href="/voting">Voting</Link>
-      </TabNavigationLink>
-      <TabNavigationLink
-        className="inline-flex gap-2"
-        asChild
-        active={pathname === "/settings"}
-      >
-        <Link href="/settings">Settings</Link>
-      </TabNavigationLink>
+      {profile && profile.isAdmin ? (
+        <TabNavigationLink
+          className="inline-flex gap-2"
+          asChild
+          active={pathname === "/admin"}
+        >
+          <Link href="/admin">Admin</Link>
+        </TabNavigationLink>
+      ) : null}
     </div>
   </TabNavigation>
     </div>

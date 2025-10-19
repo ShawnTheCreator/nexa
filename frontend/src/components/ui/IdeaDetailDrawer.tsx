@@ -16,6 +16,43 @@ export function IdeaDetailDrawer({ open, onOpenChange, ideaId }: { open: boolean
   const [idea, setIdea] = React.useState<any | null>(null);
   const [comments, setComments] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const [commentText, setCommentText] = React.useState('');
+  const [rating, setRating] = React.useState<number | null>(null);
+
+  async function submitComment() {
+    if (!commentText.trim() || !ideaId) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ideas/${ideaId}/comments`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: commentText }),
+      });
+      if (!res.ok) throw new Error('Failed to post comment');
+      setCommentText('');
+      // refresh comments
+      const cRes = await fetch(`${API_BASE_URL}/api/ideas/${ideaId}/comments`);
+      const cJson = await cRes.json();
+      setComments(cJson.data || []);
+    } catch (err) {
+      console.error('submitComment error', err);
+    }
+  }
+
+  async function submitRating(value: number) {
+    if (!ideaId) return;
+    try {
+      await fetch(`${API_BASE_URL}/api/ratings/${ideaId}/rate`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating: value }),
+      });
+      setRating(value);
+    } catch (err) {
+      console.error('submitRating error', err);
+    }
+  }
 
   React.useEffect(() => {
     if (!open || !ideaId) return;
@@ -68,6 +105,20 @@ export function IdeaDetailDrawer({ open, onOpenChange, ideaId }: { open: boolean
                   </div>
                 ))}
                 {comments.length === 0 ? <p className="text-sm text-gray-500">No comments yet.</p> : null}
+                <div className="mt-3 flex gap-2">
+                  <input value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Write a comment" className="flex-1 rounded border px-2 py-1" />
+                  <button onClick={submitComment} className="rounded bg-blue-600 px-3 py-1 text-white">Comment</button>
+                </div>
+                <div className="mt-4">
+                  <div className="text-sm font-medium">Rate this idea</div>
+                  <div className="mt-2 flex items-center gap-1">
+                    {[1,2,3,4,5].map((s) => (
+                      <button key={s} onClick={() => submitRating(s)} className={`text-xl ${rating && rating >= s ? 'text-yellow-400' : 'text-gray-300'}`}>
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           ) : null}

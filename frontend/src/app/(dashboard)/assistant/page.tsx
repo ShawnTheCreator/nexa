@@ -33,7 +33,7 @@ export default function AssistantPage() {
     <main>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">Assistant</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-50">Chat Assistant</h1>
           <p className="text-gray-500 sm:text-sm/6 dark:text-gray-500">Ask the chatbot about the website</p>
         </div>
         <Button onClick={ask} isLoading={loading}>Ask</Button>
@@ -46,7 +46,7 @@ export default function AssistantPage() {
           <Textarea className="h-40" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
         </div>
         <div>
-          <div className="h-40 whitespace-pre-wrap rounded border p-3">{answer || "The assistant will respond here."}</div>
+          <div className="h-40 whitespace-pre-wrap rounded border p-3" style={{ backgroundColor: '#4f47e6', color: 'white' }}>{answer || "The assistant will respond here."}</div>
         </div>
       </section>
     </main>

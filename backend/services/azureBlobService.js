@@ -32,7 +32,8 @@ class AzureBlobService {
       profiles: 'user-profiles',
       temp: 'temp-uploads',
       ideaAttachments: 'idea-attachments',
-      ideaVideos: 'idea-videos'
+      ideaVideos: 'idea-videos',
+      messageAttachments: 'message-attachments'
     };
   }
 

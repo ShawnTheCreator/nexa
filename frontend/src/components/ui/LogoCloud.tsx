@@ -1,5 +1,3 @@
-import { Logos } from "./Logos"
-
 export default function LogoCloud() {
   return (
     <section

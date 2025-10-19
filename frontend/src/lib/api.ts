@@ -1,13 +1,20 @@
 // frontend/lib/api.ts
-// When using proxy or local backend, allow overriding the API base URL via
-// NEXT_PUBLIC_API_BASE_URL. If not provided we keep the previous behavior
-// and call relative paths (same-origin) so the app can still function
-// when backend is served from the same origin.
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+
+// Get API base URL exclusively from environment variable
+const getApiBaseUrl = () => {
+  const url = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!url) {
+    throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined in environment variables');
+  }
+  return url.trim().replace(/\/+$/, ''); 
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export async function apiFetch(path: string, options: RequestInit = {}) {
+  // Ensure path starts with /
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const url = `${API_BASE_URL}${normalizedPath}`; // Becomes just `/api/...`
+  const url = `${API_BASE_URL}${normalizedPath}`;
 
   const res = await fetch(url, {
     ...options,

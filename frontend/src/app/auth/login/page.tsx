@@ -29,6 +29,7 @@ const Logo = (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [rawResponse, setRawResponse] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -70,6 +71,9 @@ export default function LoginPage() {
         console.error('Non-JSON response from login:', text);
         data = { message: 'Server error. Please try again later.' };
       }
+
+      // Capture raw response for debugging
+      setRawResponse(`status: ${res.status} - ${JSON.stringify(data)}`);
 
       if (!res.ok || (data && data.success === false)) {
         setError(data?.message || 'Login failed. Please check your credentials.');
@@ -147,7 +151,11 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        {rawResponse && (
+          <pre className="mt-4 rounded-tremor-default border p-2 text-xs text-gray-700 dark:text-gray-200">{rawResponse}</pre>
+        )}
+
+  <form onSubmit={handleSubmit} method="post" className="mt-6 space-y-4">
           <div>
             <label
               htmlFor="email"

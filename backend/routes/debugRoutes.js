@@ -1,4 +1,5 @@
 import express from 'express';
+import { getCookieOptions } from '../utils/generateTokenAndSetCookie.js';
 
 const router = express.Router();
 
@@ -23,6 +24,17 @@ router.get('/cookies', (req, res) => {
     res.status(200).json({ success: true, info });
   } catch (err) {
     console.error('Debug cookies error:', err.message);
+    res.status(500).json({ success: false, message: 'Debug error' });
+  }
+});
+
+// Return the cookie options the server computes for the incoming request
+router.get('/cookie-options', (req, res) => {
+  try {
+    const opts = getCookieOptions(req);
+    res.status(200).json({ success: true, options: opts });
+  } catch (err) {
+    console.error('Debug cookie-options error:', err.message);
     res.status(500).json({ success: false, message: 'Debug error' });
   }
 });

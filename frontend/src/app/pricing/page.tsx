@@ -4,15 +4,14 @@ import { Button } from "@/components/Button"
 import { ArrowAnimated } from "@/components/ui/ArrowAnimated"
 import { Faqs } from "@/components/ui/Faqs"
 import Testimonial from "@/components/ui/Testimonial"
-import { cx } from "@/lib/utils"
+// removed unused import
 import {
   RiCheckLine,
-  RiSubtractLine,
   RiUserLine,
   RiCloudLine,
 } from "@remixicon/react"
 import Link from "next/link"
-import React, { Fragment } from "react"
+import React from "react"
 
 interface Plan {
   name: string
@@ -23,6 +22,11 @@ interface Plan {
   isRecommended: boolean
   buttonText: string
   buttonLink: string
+}
+
+interface FeatureRow {
+  name: string
+  plans: Record<string, boolean | string>
 }
 
 const plans: Plan[] = [
@@ -58,7 +62,7 @@ const plans: Plan[] = [
   },
 ]
 
-const sections = [
+const sections: { name: string; features: FeatureRow[] }[] = [
   {
     name: "Workspace Fun",
     features: [

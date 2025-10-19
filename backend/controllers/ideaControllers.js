@@ -8,7 +8,7 @@ export async function createIdea(req, res) {
     const { title, description } = req.body;
     if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
     if (!title) return res.status(400).json({ success: false, message: 'Title is required' });
-
+    // Require at least one image attachment to be uploaded after creation
     const idea = await Idea.create({ userId, title, description });
     res.status(201).json({ success: true, data: idea });
   } catch (error) {
@@ -26,17 +26,32 @@ export async function uploadIdeaAttachments(req, res) {
     const idea = await Idea.findById(id);
     if (!idea) return res.status(404).json({ success: false, message: 'Idea not found' });
     if (idea.userId !== userId) return res.status(403).json({ success: false, message: 'Forbidden' });
-
     const files = req.files || [];
     if (!files.length) return res.status(400).json({ success: false, message: 'No files uploaded' });
 
-    const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.mp4', 'image/', 'video/'];
+    // Enforce single problem-statement file (non-image) and allow multiple images (but ensure at least one image exists)
+    const allowedImageTypes = ['image/'];
     const urls = [];
+    let imageCount = 0;
     for (const file of files) {
-      const validation = azureBlobService.validateFile(file, allowedTypes, 25 * 1024 * 1024);
-      if (!validation.isValid) return res.status(400).json({ success: false, message: validation.errors.join('; ') });
-      const result = await azureBlobService.uploadFile(file, 'ideaAttachments', { ideaId: id });
-      urls.push(result.url);
+      const isImage = file.mimetype && file.mimetype.startsWith('image/');
+      if (isImage) {
+        imageCount++;
+        const validation = azureBlobService.validateFile(file, ['image/'], 25 * 1024 * 1024);
+        if (!validation.isValid) return res.status(400).json({ success: false, message: validation.errors.join('; ') });
+        const result = await azureBlobService.uploadFile(file, 'ideaAttachments', { ideaId: id });
+        urls.push(result.url);
+      } else {
+        // Non-image: ensure only one non-image file is uploaded
+        const newUrlsCount = urls.length;
+        if (newUrlsCount > 0 && files.length > imageCount + 1) {
+          return res.status(400).json({ success: false, message: 'Only one non-image file allowed' });
+        }
+        const validation = azureBlobService.validateFile(file, ['.pdf', 'text/plain'], 5 * 1024 * 1024);
+        if (!validation.isValid) return res.status(400).json({ success: false, message: validation.errors.join('; ') });
+        const result = await azureBlobService.uploadFile(file, 'ideaAttachments', { ideaId: id });
+        urls.push(result.url);
+      }
     }
 
     const newUrls = idea.attachmentUrls ? JSON.parse(idea.attachmentUrls) : [];

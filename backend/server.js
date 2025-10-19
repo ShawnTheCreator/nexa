@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import express from "express";
+import http from 'http';
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { connectAzureSQL } from "./database/connectAzureSQL.js";
@@ -14,6 +15,9 @@ import chatRoutes from "./routes/chatRoutes.js";
 import debugRoutes from "./routes/debugRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import moderationRoutes from "./routes/moderationRoutes.js";
+import ratingRoutes from "./routes/ratingRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import assistantRoutes from "./routes/assistantRoutes.js";
 
 dotenv.config();
 
@@ -60,6 +64,9 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/debug", debugRoutes);
 app.use("/api/ideas", commentRoutes);
 app.use("/api/moderation", moderationRoutes);
+app.use("/api/ratings", ratingRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/assistant", assistantRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -107,8 +114,19 @@ async function startServer() {
       console.warn("⚠️ SKIP_BLOB=true, skipping Azure Blob Storage initialization");
     }
 
-    // Start the server
-    app.listen(PORT, () => {
+    // Start the server using http.Server so we can attach Socket.IO
+    const server = http.createServer(app);
+
+    // Attach socket service if available
+    try {
+      const { socketService } = await import('./services/socketService.js');
+      await socketService.attach(server);
+      console.log('✅ Socket service attached');
+    } catch (err) {
+      console.warn('⚠️ Socket service not attached:', err.message);
+    }
+
+    server.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🌐 Allowed origins: ${allowedOrigins.join(', ')}`);

@@ -1,9 +1,10 @@
+import React from "react"
 import Link from "next/link"
 import { siteConfig } from "@/app/siteConfig"
 import { Button } from "@/components/Button"
 import { ArrowAnimated } from "@/components/ui/ArrowAnimated"
 
-const Logo = (props) => (
+const Logo = (props: React.SVGProps<SVGSVGElement>) => (
   <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
     <path d="M9 2L10.5 7L15 8.5L10.5 10L9 15L7.5 10L3 8.5L7.5 7L9 2Z" />
     <path d="M15 11L16 14L19 15L16 16L15 19L14 16L11 15L14 14L15 11Z" />

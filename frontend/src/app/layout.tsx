@@ -3,13 +3,15 @@
 import Footer from "@/components/ui/Footer";
 import { Navigation } from "@/components/ui/Navbar";
 import { ThemeProvider } from "next-themes";
+import { ChatFloatButton } from '@/components/ChatFloatButton'
+import { ChatModal } from '@/components/ChatModal'
 import { Inter, Jost } from "next/font/google";
 import localFont from "next/font/local";
 import { usePathname } from 'next/navigation';
 import "./globals.css";
 
 const authPages = ['/auth/login', '/auth/register', '/auth/reset'];
-const dashboardPages = ['/overview', '/ideas', '/voting', '/settings', '/support'];
+const dashboardPages = ['/overview', '/ideas', '/voting', '/settings', '/support', '/assistant', '/chat', '/admin'];
 
 const jost = Jost({
   subsets: ["latin"],
@@ -54,9 +56,12 @@ export default function RootLayout({
           defaultTheme="system"
           disableTransitionOnChange
         >
-          {!(isAuthPage || isDashboardPage) && <Navigation />}
+          {/* Navigation visible only on non-auth, non-dashboard pages */}
+          {!isAuthPage && !isDashboardPage && <Navigation />}
+          {isDashboardPage && <ChatFloatButton />}
+          {isDashboardPage && <ChatModal />}
           {children}
-          {!(isAuthPage || isDashboardPage) && <Footer />}
+          {!isAuthPage && <Footer />}
         </ThemeProvider>
       </body>
     </html>
