@@ -1,6 +1,9 @@
 // frontend/lib/api.ts
-// When using proxy, API calls go to relative paths
-export const API_BASE_URL = ''; // Empty string - calls go to /api directly
+// When using proxy or local backend, allow overriding the API base URL via
+// NEXT_PUBLIC_API_BASE_URL. If not provided we keep the previous behavior
+// and call relative paths (same-origin) so the app can still function
+// when backend is served from the same origin.
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 export async function apiFetch(path: string, options: RequestInit = {}) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;

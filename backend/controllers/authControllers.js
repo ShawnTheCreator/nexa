@@ -97,8 +97,8 @@ const signup = async (req, res) => {
     // Create user in database
     const user = await User.create(userData);
 
-    // Generate JWT token and set cookie
-    generateTokenAndSetCookie(res, user.id);
+  // Generate JWT token and set cookie (pass req so helper can infer domain in prod)
+  generateTokenAndSetCookie(req, res, user.id);
 
     res.status(201).json({
       success: true,
@@ -158,8 +158,8 @@ const login = async (req, res) => {
     // Update last login
     await user.update({ lastLogin: new Date() });
 
-    // Generate JWT token and set cookie
-    generateTokenAndSetCookie(res, user.id);
+  // Generate JWT token and set cookie (pass req so helper can infer domain in prod)
+  generateTokenAndSetCookie(req, res, user.id);
 
     res.status(200).json({
       success: true,
