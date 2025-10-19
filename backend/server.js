@@ -11,6 +11,7 @@ import ticketRoutes from "./routes/ticketRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import ideaRoutes from "./routes/ideaRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import debugRoutes from "./routes/debugRoutes.js";
 
 dotenv.config();
 
@@ -54,6 +55,7 @@ app.use("/api/tickets", ticketRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/ideas", ideaRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/debug", debugRoutes);
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
