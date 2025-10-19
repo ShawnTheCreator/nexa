@@ -1,20 +1,10 @@
 // frontend/lib/api.ts
-
-// Get API base URL exclusively from environment variable
-const getApiBaseUrl = () => {
-  const url = process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (!url) {
-    throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined in environment variables');
-  }
-  return url.trim().replace(/\/+$/, ''); 
-};
-
-export const API_BASE_URL = getApiBaseUrl();
+// When using proxy, API calls go to relative paths
+export const API_BASE_URL = ''; // Empty string - calls go to /api directly
 
 export async function apiFetch(path: string, options: RequestInit = {}) {
-  // Ensure path starts with /
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const url = `${API_BASE_URL}${normalizedPath}`;
+  const url = `${API_BASE_URL}${normalizedPath}`; // Becomes just `/api/...`
 
   const res = await fetch(url, {
     ...options,
