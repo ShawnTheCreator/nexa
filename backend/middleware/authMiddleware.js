@@ -44,10 +44,15 @@ export const protectRoute = async (req, res, next) => {
 
     // Check if user is verified (optional - depends on your requirements)
     if (!user.isVerified) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Please verify your email before accessing this resource.' 
-      });
+      // Allow a developer bypass via env var for non-production testing
+      if (process.env.SKIP_EMAIL_VERIFICATION === 'true') {
+        console.log('Auth middleware: skipping email verification check because SKIP_EMAIL_VERIFICATION is true');
+      } else {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Please verify your email before accessing this resource.' 
+        });
+      }
     }
 
     // Attach user to request object (excluding sensitive fields)
@@ -123,7 +128,8 @@ export const optionalAuth = async (req, res, next) => {
         
         if (decoded && decoded.userId) {
           const user = await User.findById(decoded.userId);
-          if (user && user.isVerified) {
+          if (user && (user.isVerified || process.env.SKIP_EMAIL_VERIFICATION === 'true')) {
+            if (!user.isVerified) console.log('Optional auth: attaching unverified user because SKIP_EMAIL_VERIFICATION is true');
             req.user = user.toJSON();
           }
         }
