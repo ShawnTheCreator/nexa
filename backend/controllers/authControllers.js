@@ -1,6 +1,6 @@
 import { User } from "../models/userModel.js";
 import bcrypt from "bcrypt";
-import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
+import { generateTokenAndSetCookie, getCookieOptions } from "../utils/generateTokenAndSetCookie.js";
 
 const signup = async (req, res) => {
   try {
@@ -177,12 +177,12 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    // Clear the JWT cookie (match attributes used when setting cookie)
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    });
+    // Clear the JWT cookie with the same options used to set it so browsers accept the clear
+    const clearOpts = getCookieOptions(req);
+    // Ensure httpOnly remains true when clearing
+    clearOpts.httpOnly = true;
+
+    res.clearCookie("token", clearOpts);
 
     res.status(200).json({
       success: true,
