@@ -1,0 +1,20 @@
+# Netlify config for Next.js (App Router) living in `frontend/`
+# Docs: https://docs.netlify.com/integrations/frameworks/next-js/overview/
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = ".next"
+
+# Use Node 20 for Next 14+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--include=dev"
+
+# Ensure functions bundle correctly for the Next runtime
+[functions]
+  node_bundler = "esbuild"
+
+# Enable the official Netlify Next.js Runtime (handles SSR/ISR, routes, middleware)
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
