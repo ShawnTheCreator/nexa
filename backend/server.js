@@ -38,12 +38,22 @@ const allowedOrigins = [
   'http://127.0.0.1:3000'
 ].filter(Boolean);
 
+// Optionally allow Netlify deploy previews and branches when enabled
+const allowNetlify = process.env.ALLOW_NETLIFY === 'true';
+
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow non-browser requests (no origin) and allowedOrigins
     if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
+    // Optionally allow *.netlify.app (deploy previews/branches)
+    try {
+      const { hostname } = new URL(origin);
+      if (allowNetlify && hostname.endsWith('netlify.app')) {
+        return callback(null, true);
+      }
+    } catch {}
     return callback(new Error(`Not allowed by CORS: ${origin}`));
   },
   credentials: true,
@@ -77,6 +87,16 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// CORS diagnostic endpoint
+app.get('/api/cors-check', (req, res) => {
+  res.status(200).json({
+    ok: true,
+    origin: req.headers.origin || null,
+    allowedOrigins,
+    allowNetlify
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
@@ -97,21 +117,21 @@ async function startServer() {
     if (!SKIP_DB) {
       // Connect to Azure SQL Database
       await connectAzureSQL();
-      console.log("✅ Connected to Azure SQL Database");
+      console.log(" Connected to Azure SQL Database");
 
       // Run migrations to ensure schema is up to date
       await runMigrations();
-      console.log("✅ Database migrations executed");
+      console.log(" Database migrations executed");
     } else {
-      console.warn("⚠️ SKIP_DB=true, skipping Azure SQL connection and migrations");
+      console.warn(" SKIP_DB=true, skipping Azure SQL connection and migrations");
     }
 
     if (!SKIP_BLOB) {
       // Initialize Azure Blob Storage containers
       await azureBlobService.initializeContainers();
-      console.log("✅ Azure Blob Storage containers initialized");
+      console.log(" Azure Blob Storage containers initialized");
     } else {
-      console.warn("⚠️ SKIP_BLOB=true, skipping Azure Blob Storage initialization");
+      console.warn(" SKIP_BLOB=true, skipping Azure Blob Storage initialization");
     }
 
     // Start the server using http.Server so we can attach Socket.IO
@@ -121,18 +141,18 @@ async function startServer() {
     try {
       const { socketService } = await import('./services/socketService.js');
       await socketService.attach(server);
-      console.log('✅ Socket service attached');
+      console.log(' Socket service attached');
     } catch (err) {
-      console.warn('⚠️ Socket service not attached:', err.message);
+      console.warn(' Socket service not attached:', err.message);
     }
 
     server.listen(PORT, () => {
-      console.log(`🚀 Server is running on port ${PORT}`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🌐 Allowed origins: ${allowedOrigins.join(', ')}`);
+      console.log(` Server is running on port ${PORT}`);
+      console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(` Allowed origins: ${allowedOrigins.join(', ')}`);
     });
   } catch (error) {
-    console.error("❌ Failed to start server:", error.message);
+    console.error(" Failed to start server:", error.message);
     process.exit(1);
   }
 }
