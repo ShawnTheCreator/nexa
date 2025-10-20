@@ -8,6 +8,7 @@ import { ChatModal } from '@/components/ChatModal'
 import { Inter, Jost } from "next/font/google";
 import localFont from "next/font/local";
 import { usePathname } from 'next/navigation';
+import Script from "next/script";
 import "./globals.css";
 
 const authPages = ['/auth/login', '/auth/register', '/auth/reset'];
@@ -48,6 +49,12 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning className="h-full">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.css"
+        />
+      </head>
       <body
         className={`${inter.variable} ${jost.variable} ${geistSans.variable} ${geistMono.variable} min-h-screen scroll-auto antialiased h-full selection:bg-indigo-100 selection:text-indigo-700 dark:bg-gray-950 ${!(isAuthPage || isDashboardPage) ? 'font-jost' : ''}`}
       >
@@ -63,6 +70,42 @@ export default function RootLayout({
           {children}
           {!isAuthPage && <Footer />}
         </ThemeProvider>
+        <Script
+          src="https://cdn.jsdelivr.net/npm/cookieconsent@3/build/cookieconsent.min.js"
+          strategy="afterInteractive"
+          onLoad={() => {
+            try {
+              const cc = (window as any).cookieconsent;
+              if (cc && typeof cc.initialise === 'function') {
+                cc.initialise({
+                  palette: {
+                    popup: { background: '#007bff' },
+                    button: { background: '#fff', text: '#007bff' }
+                  },
+                  theme: 'classic',
+                  content: {
+                    message: 'We use cookies to improve your experience.',
+                    dismiss: 'Got it!',
+                    link: 'Learn more',
+                    href: '/privacy'
+                  },
+                  onInitialise: function () {
+                    const popup = document.querySelector('.cc-window') as HTMLElement | null;
+                    if (popup) {
+                      popup.style.position = 'fixed';
+                      popup.style.top = '50%';
+                      popup.style.left = '50%';
+                      popup.style.transform = 'translate(-50%, -50%)';
+                      popup.style.width = 'auto';
+                      popup.style.maxWidth = '90%';
+                      popup.style.zIndex = '10000';
+                    }
+                  }
+                });
+              }
+            } catch {}
+          }}
+        />
       </body>
     </html>
   );
